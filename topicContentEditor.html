@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Topic Content Editor Widget</title>
+
+    <script src="https://unpkg.com/@contentful/app-sdk@3"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.2.1/lodash.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <div id="app">
+        <v-app>
+          <div id="a">
+            <!-- <v-date-picker v-model="dataField2"></v-date-picker> -->
+            <v-text-field v-model="topic.name" label="Name"></v-text-field>
+            <v-text-field
+              v-model="topic.description"
+              label="Description"
+            ></v-text-field>
+
+            <h3>Representation</h3>
+            <v-text-field
+              outlined
+              v-model="topic.representation.layout"
+              label="Layout"
+            ></v-text-field>
+            <v-text-field
+              outlined
+              v-model="topic.representation.data"
+              label="Card Type"
+            ></v-text-field>
+            <v-text-field
+              outlined
+              v-model="attributes"
+              label="Attributes"
+            ></v-text-field>
+
+            <v-btn @click="test" color="primary">Click me</v-btn>
+          </div>
+        </v-app>
+      </div>
+    </div>
+
+    <script>
+      var cfExt = window.contentfulExtension || window.contentfulWidget;
+      cfExt.init(function (extension) {
+        // get data from contentful
+        var fieldValue = _.merge(
+          {
+            // default topic value
+            name: "",
+            description: "",
+            source: "search/listing",
+            type: "default",
+            representation: {
+              layout: "",
+              data: "",
+              attributes: {}
+            }
+          },
+          extension.field.getValue()
+        );
+        //extension.field.getValue() |
+        // extension.window.startAutoResizer(); -- this isn't working well with Vue's virtualDOM
+        extension.window.updateHeight(1000); // we need to set some height in pixels
+
+        // initialize the vue app
+        var vm = new Vue({
+          el: "#app",
+          vuetify: new Vuetify(),
+
+          data: {
+            topic: fieldValue
+          },
+
+          computed: {
+            attributes: {
+              get: function () {
+                return JSON.stringify(this.topic.representation.attributes);
+              },
+              set: function (newValue) {
+                this.topic.representation.attributes = JSON.parse(newValue);
+              }
+            }
+          },
+
+          methods: {
+            test() {
+              console.log(this.dataField1 + "/" + this.dataField2);
+            }
+          },
+          mounted() {
+            // if needed
+          },
+          watch: {
+            $data: {
+              handler: function (val, oldVal) {
+                extension.field.setValue(val.topic);
+              },
+              deep: true
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
